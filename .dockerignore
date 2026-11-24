@@ -1,6 +1,6 @@
 *
-!agents/
-!agents/**
+!foldjay/
+!foldjay/**
 !examples/
 !examples/**
 !tests/

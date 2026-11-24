@@ -21,7 +21,7 @@ class Policy:
             raise Denied("Path is outside workspace")
         if path == self.state or path.is_relative_to(self.state):
             raise Denied("Runtime state must be accessed through dedicated tools")
-        if any(part in {".git", ".ssh", ".aws", ".codex", ".agents", ".bear"} or
+        if any(part in {".git", ".ssh", ".aws", ".codex", ".agents", ".bear", ".foldjay"} or
                part == ".env" or part.startswith(".env.") and part != ".env.example" or
                part.endswith((".pem", ".key")) for part in path.relative_to(self.workspace).parts):
             raise Denied("Protected path")

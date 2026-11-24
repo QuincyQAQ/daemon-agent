@@ -1,4 +1,4 @@
-name: Bear Harness checks
+name: Foldjay Agent checks
 on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
@@ -19,8 +19,8 @@ jobs:
       - name: Run installed CLI outside checkout
         working-directory: ${{ runner.temp }}
         run: |
-          bear demo > demo.json
-          python -c "import json; r=json.load(open('demo.json')); assert r['resumed'] and r['file_content']=='Verified Harness\n'"
+          foldjay demo > demo.json
+          python -c "import json; r=json.load(open('demo.json')); assert r['resumed'] and r['file_content']=='Verified Foldjay\n'"
 
   model-sdks:
     runs-on: ubuntu-latest
@@ -36,14 +36,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: docker build --target core -t bear-harness:test .
-      - run: docker run --rm bear-harness:test demo
+      - run: docker build --target core -t foldjay-agent:test .
+      - run: docker run --rm foldjay-agent:test demo
       - name: Check live image dependencies
         run: |
-          docker build --target live -t bear-harness:live .
-          docker run --rm --entrypoint python bear-harness:live -c 'import openai, anthropic'
+          docker build --target live -t foldjay-agent:live .
+          docker run --rm --entrypoint python foldjay-agent:live -c 'import openai, anthropic'
       - name: Run Compose with a fresh writable workspace
         run: |
-          export BEAR_WORKSPACE="$(mktemp -d)" BEAR_UID="$(id -u)" BEAR_GID="$(id -g)"
-          docker compose run --build --rm -T bear demo
-          test -s "$BEAR_WORKSPACE/.bear/demo/latest-report.json"
+          export FOLDJAY_WORKSPACE="$(mktemp -d)" FOLDJAY_UID="$(id -u)" FOLDJAY_GID="$(id -g)"
+          docker compose run --build --rm -T foldjay demo
+          test -s "$FOLDJAY_WORKSPACE/.foldjay/demo/latest-report.json"

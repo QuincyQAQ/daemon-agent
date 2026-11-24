@@ -15,7 +15,7 @@ class Scenario(DemoProvider):
     def complete(self, messages, tools):
         self.step += 1
         if self.step == 1:
-            name, args = "write_file", {"path": "demo-note.txt", "content": "Hello Harness\n", "expected_hash": "NEW"}
+            name, args = "write_file", {"path": "demo-note.txt", "content": "Hello Foldjay\n", "expected_hash": "NEW"}
         elif self.step == 2:
             name, args = "read_file", {"path": "demo-note.txt"}
         elif self.step == 3:
@@ -31,7 +31,7 @@ class Scenario(DemoProvider):
 def run_demo(base):
     workspace = base / uuid.uuid4().hex[:8]
     workspace.mkdir(parents=True)
-    config = Config(workspace, workspace / ".bear")
+    config = Config(workspace, workspace / ".foldjay")
     store = Store(config.state)
     try:
         agent = Agent(config, store, Scenario(), approve=lambda action, detail: detail.get("path") == "demo-note.txt")

@@ -18,7 +18,7 @@ def dumps(value):
 
 def atomic_write(path: Path, text: str):
     path.parent.mkdir(parents=True, exist_ok=True)
-    fd, name = tempfile.mkstemp(prefix=".bear-", dir=path.parent)
+    fd, name = tempfile.mkstemp(prefix=".foldjay-", dir=path.parent)
     try:
         if path.exists():
             os.fchmod(fd, path.stat().st_mode & 0o777)
@@ -36,7 +36,11 @@ class Store:
     def __init__(self, root: Path):
         self.root = root
         root.mkdir(parents=True, exist_ok=True, mode=0o700)
-        self.db = sqlite3.connect(root / "bear.sqlite3", timeout=10)
+        database = root / "foldjay.sqlite3"
+        legacy = root / "bear.sqlite3"
+        if legacy.is_file() and not database.exists():
+            database = legacy
+        self.db = sqlite3.connect(database, timeout=10)
         self.db.row_factory = sqlite3.Row
         self.db.execute("PRAGMA journal_mode=WAL")
         self.db.executescript("""

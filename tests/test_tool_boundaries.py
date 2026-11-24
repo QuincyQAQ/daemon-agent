@@ -3,10 +3,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from agents.mcp import MCPClient
-from agents.permissions import Policy
-from agents.storage import Store
-from agents.tools import Tools
+from foldjay.mcp import MCPClient
+from foldjay.permissions import Policy
+from foldjay.storage import Store
+from foldjay.tools import Tools
 
 
 # A stdio fixture with a JSON Schema union that accepts a string or null.
@@ -42,7 +42,7 @@ class ToolBoundaryTest(unittest.TestCase):
         temp = tempfile.TemporaryDirectory()
         self.addCleanup(temp.cleanup)
         self.root = Path(temp.name)
-        self.store = Store(self.root / ".bear")
+        self.store = Store(self.root / ".foldjay")
         self.addCleanup(self.store.close)
         self.policy = Policy(self.root, self.store.root, approve=lambda *args: True)
         self.tools = Tools(self.policy, self.store, timeout=2)

@@ -3,7 +3,7 @@ import importlib.util
 import json
 import unittest
 
-from agents.providers import AnthropicProvider, OpenAIProvider
+from foldjay.providers import AnthropicProvider, OpenAIProvider
 
 
 TOOLS = [{"type": "function", "function": {"name": "lookup", "description": "Read a sample",

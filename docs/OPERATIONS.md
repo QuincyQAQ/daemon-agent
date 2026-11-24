@@ -21,10 +21,10 @@
 
 ## 数据管理
 
-- `.bear/` 包含会话、工具输出和学习来源，按敏感项目数据处理。
+- `.foldjay/` 包含会话、工具输出和学习来源，按敏感项目数据处理。
 - 工具审计默认只记录工具名、成功与耗时，不记录完整参数；会话仍会保存工具参数和结果。
 - `doctor` 只显示 key 是否存在，不显示其值。Shell/MCP 不默认继承模型 key。
-- 备份应在进程停止后复制整个 `.bear/`，或使用 SQLite backup API 做在线快照；不要只复制活跃 WAL 数据库主文件。
+- 备份应在进程停止后复制整个 `.foldjay/`，或使用 SQLite backup API 做在线快照；不要只复制活跃 WAL 数据库主文件。
 - 需要换工作区时创建新会话；恢复检查工作区绝对路径，避免误操作其他项目。
 - SDK 常见网络/认证异常仅展示异常类型，不展示可能包含请求材料的详细消息。
 
@@ -32,7 +32,7 @@
 
 ### `Python 3.10+ is required`
 
-使用 `./bear.sh`，或设置 `BEAR_PYTHON=/usr/bin/python3.10`。不要在默认 Python 3.8 环境直接运行包。
+使用 `./foldjay.sh`，或设置 `FOLDJAY_PYTHON=/usr/bin/python3.10`。不要在默认 Python 3.8 环境直接运行包。
 
 ### `No module named pip` / `ensurepip is not available`
 
@@ -40,7 +40,7 @@
 
 ### 模型端点返回 400 / 401 / 403
 
-确认 `BEAR_PROVIDER`、`BEAR_MODEL`、对应 API key 与 base URL。OpenAI 兼容服务必须支持 Chat Completions 的 `tools`、`tool_calls` 和 `tool` 消息；仅文本补全兼容并不足够。Anthropic 端点需支持 Messages 工具协议。`doctor` 不发网络请求，因此不能证明凭据有效。
+确认 `FOLDJAY_PROVIDER`、`FOLDJAY_MODEL`、对应 API key 与 base URL。OpenAI 兼容服务必须支持 Chat Completions 的 `tools`、`tool_calls` 和 `tool` 消息；仅文本补全兼容并不足够。Anthropic 端点需支持 Messages 工具协议。`doctor` 不发网络请求，因此不能证明凭据有效。
 
 ### 非交互任务写入被拒绝
 
@@ -62,7 +62,7 @@
 
 ### 明明读过文件，恢复后却说没读过
 
-旧版上下文压缩失败时只保留最后几个工具结果的片段，可能遗漏 README 等较早依据。新版会从同一会话的本地归档自动重建 `tool_evidence`，并独立保留历史读取记录与限长摘录。退出旧进程后使用原会话 ID 恢复即可；不要删除 `.bear/sessions/archives/`。若归档已丢失或原读取本身被截断，仍需重新读取才能补充缺失内容。
+旧版上下文压缩失败时只保留最后几个工具结果的片段，可能遗漏 README 等较早依据。新版会从同一会话的本地归档自动重建 `tool_evidence`，并独立保留历史读取记录与限长摘录。退出旧进程后使用原会话 ID 恢复即可；不要删除 `.foldjay/sessions/archives/`。若归档已丢失或原读取本身被截断，仍需重新读取才能补充缺失内容。
 
 ### Skills 评测拒绝空数据
 

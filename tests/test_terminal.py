@@ -6,7 +6,7 @@ import unittest
 @unittest.skipUnless(importlib.util.find_spec("rich"), "install .[ui] for terminal rendering tests")
 class TerminalTest(unittest.TestCase):
     def test_markdown_and_paths_are_literal(self):
-        from agents.terminal import TerminalChat
+        from foldjay.terminal import TerminalChat
         from rich.console import Console
         stream = io.StringIO()
         view = TerminalChat()
@@ -21,5 +21,5 @@ class TerminalTest(unittest.TestCase):
         self.assertNotIn("```", text)
 
     def test_terminal_controls_do_not_reach_model_markdown(self):
-        from agents.terminal import visible
+        from foldjay.terminal import visible
         self.assertEqual(visible("A\x1bB\r\x07\x9b\n中\t👩‍💻"), "AB\n中\t👩‍💻")

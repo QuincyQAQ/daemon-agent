@@ -1,9 +1,9 @@
 services:
-  bear:
+  foldjay:
     build:
       context: .
       target: core
-    user: "${BEAR_UID:-1000}:${BEAR_GID:-1000}"
+    user: "${FOLDJAY_UID:-${BEAR_UID:-1000}}:${FOLDJAY_GID:-${BEAR_GID:-1000}}"
     working_dir: /workspace
     stdin_open: true
     tty: true
@@ -17,10 +17,10 @@ services:
     tmpfs:
       - /tmp:size=64m,mode=1777
     volumes:
-      - ${BEAR_WORKSPACE:-.}:/workspace
+      - ${FOLDJAY_WORKSPACE:-${BEAR_WORKSPACE:-.}}:/workspace
     environment:
-      BEAR_PROVIDER: ${BEAR_PROVIDER:-demo}
-      BEAR_MODEL: ${BEAR_MODEL:-}
+      FOLDJAY_PROVIDER: ${FOLDJAY_PROVIDER:-${BEAR_PROVIDER:-demo}}
+      FOLDJAY_MODEL: ${FOLDJAY_MODEL:-${BEAR_MODEL:-}}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}

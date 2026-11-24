@@ -7,19 +7,19 @@ import unittest
 from pathlib import Path
 from types import SimpleNamespace
 
-from agents.agent import Agent, Budget
-from agents.config import Config
-from agents.context import compact, tool_evidence
-from agents.demo import run_demo
-from agents.main import main, parser
-from agents.mcp import MCPClient
-from agents.memory import Memory
-from agents.permissions import Denied, Policy
-from agents.providers import AnthropicProvider, DemoProvider, OpenAIProvider, anthropic_messages, tool_call
-from agents.retrieval import rank
-from agents.skills import Skills
-from agents.storage import Store
-from agents.tools import Tools, sha256
+from foldjay.agent import Agent, Budget
+from foldjay.config import Config
+from foldjay.context import compact, tool_evidence
+from foldjay.demo import run_demo
+from foldjay.main import main, parser
+from foldjay.mcp import MCPClient
+from foldjay.memory import Memory
+from foldjay.permissions import Denied, Policy
+from foldjay.providers import AnthropicProvider, DemoProvider, OpenAIProvider, anthropic_messages, tool_call
+from foldjay.retrieval import rank
+from foldjay.skills import Skills
+from foldjay.storage import Store
+from foldjay.tools import Tools, sha256
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -46,7 +46,7 @@ class WorkspaceTest(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name)
-        self.config = Config(self.root, self.root / ".bear")
+        self.config = Config(self.root, self.root / ".foldjay")
         self.store = Store(self.config.state)
         self.policy = Policy(self.root, self.config.state, approve=lambda *args: True)
         self.tools = Tools(self.policy, self.store, timeout=0.15)
@@ -86,7 +86,7 @@ class WorkspaceTest(unittest.TestCase):
         self.assertEqual(file.read_bytes(),b"hello\r\nbear\r\n")
 
     def test_paths_and_secrets_blocked(self):
-        for path in ["../escape", "/etc/passwd", ".bear/bear.sqlite3", ".env", ".env.production", ".ssh/id_rsa", "server.key"]:
+        for path in ["../escape", "/etc/passwd", ".foldjay/foldjay.sqlite3", ".env", ".env.production", ".ssh/id_rsa", "server.key"]:
             with self.subTest(path=path), self.assertRaises(Denied):
                 self.policy.path(path)
         self.assertEqual(self.policy.path(".env.example"), self.root/".env.example")
@@ -133,11 +133,11 @@ class WorkspaceTest(unittest.TestCase):
     def test_shell_execution_timeout_and_env(self):
         self.assertEqual(self.tools.call("shell", {"command":"printf hello"})["output"], "hello")
         self.assertIn("error", self.tools.call("shell", {"command":"sleep 5"}))
-        os.environ["BEAR_TEST_SECRET"] = "private"
+        os.environ["FOLDJAY_TEST_SECRET"] = "private"
         try:
-            self.assertEqual(self.tools.call("shell", {"command":"printf '%s' \"$BEAR_TEST_SECRET\""})["output"], "")
+            self.assertEqual(self.tools.call("shell", {"command":"printf '%s' \"$FOLDJAY_TEST_SECRET\""})["output"], "")
         finally:
-            del os.environ["BEAR_TEST_SECRET"]
+            del os.environ["FOLDJAY_TEST_SECRET"]
 
     def test_memory_retrieval_and_delete(self):
         memory = Memory(self.store)
@@ -414,16 +414,16 @@ class WorkspaceTest(unittest.TestCase):
 
     def test_demo_end_to_end(self):
         result = run_demo(self.root/"demo")
-        self.assertEqual(result["file_content"],"Verified Harness\n")
+        self.assertEqual(result["file_content"],"Verified Foldjay\n")
         self.assertTrue(result["resumed"])
         self.assertEqual(result["evaluation"]["score"],1)
         self.assertEqual(result["child"]["kind"],"explore")
 
     def test_cli_one_shot_and_resume(self):
-        result = subprocess.run([sys.executable,"-m","agents.main","--workspace",str(self.root),"run","inspect"],cwd=ROOT,capture_output=True,text=True)
+        result = subprocess.run([sys.executable,"-m","foldjay.main","--workspace",str(self.root),"run","inspect"],cwd=ROOT,capture_output=True,text=True)
         self.assertEqual(result.returncode,0,result.stderr)
         sid = result.stderr.split("session=")[1].splitlines()[0]
-        result = subprocess.run([sys.executable,"-m","agents.main","--workspace",str(self.root),"run","--resume",sid,"inspect again"],cwd=ROOT,capture_output=True,text=True)
+        result = subprocess.run([sys.executable,"-m","foldjay.main","--workspace",str(self.root),"run","--resume",sid,"inspect again"],cwd=ROOT,capture_output=True,text=True)
         self.assertEqual(result.returncode,0,result.stderr)
 
 

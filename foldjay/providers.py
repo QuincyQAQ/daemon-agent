@@ -37,7 +37,7 @@ class OpenAIProvider:
     def __init__(self, model, timeout=60, client=None, *, api_key=None, base_url=None,
                  direct=False, max_output_tokens=None, max_retries=2, thinking=None):
         if not model:
-            raise ValueError("Set BEAR_MODEL to a model supported by your endpoint")
+            raise ValueError("Set FOLDJAY_MODEL to a model supported by your endpoint")
         self.model = model
         self.max_output_tokens = max_output_tokens
         self.thinking = thinking
@@ -112,7 +112,7 @@ def anthropic_messages(messages):
 class AnthropicProvider:
     def __init__(self, model, timeout=60, client=None):
         if not model:
-            raise ValueError("Set BEAR_MODEL")
+            raise ValueError("Set FOLDJAY_MODEL")
         self.model = model
         if client is None:
             from anthropic import Anthropic
@@ -143,7 +143,7 @@ def create_provider(config):
                      max_retries=config.model_retries, thinking=config.thinking),
                  "anthropic": lambda: AnthropicProvider(config.model, config.timeout)}
     if config.provider not in factories:
-        raise ValueError("BEAR_PROVIDER must be demo, openai or anthropic")
+        raise ValueError("FOLDJAY_PROVIDER must be demo, openai or anthropic")
     return factories[config.provider]()
 
 

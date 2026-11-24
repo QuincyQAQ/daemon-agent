@@ -5,6 +5,16 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 
+def default_state(workspace):
+    current = workspace / ".foldjay"
+    legacy = workspace / ".bear"
+    return legacy if legacy.is_dir() and not current.exists() else current
+
+
+def setting(name, default=None):
+    return os.getenv("FOLDJAY_" + name, os.getenv("BEAR_" + name, default))
+
+
 @dataclass
 class Config:
     workspace: Path
@@ -42,6 +52,6 @@ class Config:
     @classmethod
     def from_env(cls, workspace=".", state=None, **kwargs):
         root = Path(workspace).resolve()
-        return cls(root, Path(state or root / ".bear"),
-                   provider=os.getenv("BEAR_PROVIDER", "demo"),
-                   model=os.getenv("BEAR_MODEL", ""), **kwargs)
+        return cls(root, Path(state) if state else default_state(root),
+                   provider=setting("PROVIDER", "demo"),
+                   model=setting("MODEL", ""), **kwargs)

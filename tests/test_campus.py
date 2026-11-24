@@ -5,11 +5,11 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from agents.campus import (BASE_URL, apply_profile, chat_models, choose_model,
+from foldjay.campus import (BASE_URL, apply_profile, chat_models, choose_model,
                            load_key, normalize_base_url, setup)
-from agents.config import Config
-from agents.main import error_message
-from agents.permissions import Denied, Policy
+from foldjay.config import Config
+from foldjay.main import error_message
+from foldjay.permissions import Denied, Policy
 
 
 class CampusTest(unittest.TestCase):
@@ -49,15 +49,15 @@ class CampusTest(unittest.TestCase):
             ccr=root/"ccr.json"
             ccr.write_text(json.dumps({"Providers":[{"name":"relay","api_base_url":BASE_URL+"/chat/completions","api_key":"test-only-secret"}]}))
             before=ccr.read_bytes()
-            profile_path=root/".bear/campus.json"
-            with patch("agents.campus.discover",return_value=["Qwen"]):
+            profile_path=root/".foldjay/campus.json"
+            with patch("foldjay.campus.discover",return_value=["Qwen"]):
                 result=setup(profile_path,from_ccr=True,ccr_path=ccr)
             self.assertTrue(result["configured"])
             self.assertNotIn("test-only-secret",profile_path.read_text())
             self.assertEqual(ccr.read_bytes(),before)
             profile=json.loads(profile_path.read_text())
             self.assertEqual(load_key(profile),"test-only-secret")
-            with patch.dict(os.environ,{"BEAR_MODEL":"Qwen"}):
+            with patch.dict(os.environ,{"FOLDJAY_MODEL":"Qwen"}):
                 config=apply_profile(Config(root,root/"state"),profile_path)
             self.assertEqual(config.api_key,"test-only-secret")
             self.assertEqual(config.provider,"openai")
@@ -81,10 +81,10 @@ class CampusTest(unittest.TestCase):
             ccr=root/"ccr.json"
             ccr.write_text(json.dumps({"Providers":[{"name":"relay","api_base_url":BASE_URL,
                 "api_key":"test-only"}],"Router":{"default":"relay,DeepSeek-V4-Pro"}}))
-            with patch("agents.campus.discover",return_value=["DeepSeek-V4-Pro","GLM-5.3-Flash"]):
+            with patch("foldjay.campus.discover",return_value=["DeepSeek-V4-Pro","GLM-5.3-Flash"]):
                 result=setup(root/"campus.json",from_ccr=True,ccr_path=ccr)
             self.assertEqual(result["model"],"DeepSeek-V4-Pro")
-            with patch("agents.campus.discover",return_value=["GLM-5.3-Flash"]):
+            with patch("foldjay.campus.discover",return_value=["GLM-5.3-Flash"]):
                 result=setup(root/"campus.json",from_ccr=True,ccr_path=ccr)
             self.assertEqual(result["model"],"GLM-5.3-Flash")
 
@@ -93,13 +93,13 @@ class CampusTest(unittest.TestCase):
             root=Path(directory)
             policy=Policy(root,root/"other-state")
             with self.assertRaises(Denied):
-                policy.path(".bear/campus.json")
+                policy.path(".foldjay/campus.json")
 
     def test_failed_discovery_does_not_overwrite_profile(self):
         with tempfile.TemporaryDirectory() as directory:
             path=Path(directory)/"campus.json"
             path.write_text("original")
-            with patch("agents.campus.discover",side_effect=RuntimeError("unavailable")):
+            with patch("foldjay.campus.discover",side_effect=RuntimeError("unavailable")):
                 with self.assertRaises(RuntimeError):
                     setup(path)
             self.assertEqual(path.read_text(),"original")

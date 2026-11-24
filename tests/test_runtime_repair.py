@@ -5,14 +5,14 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from agents.agent import Agent
-from agents.campus import provider_for, thinking_mode
-from agents.config import Config
-from agents.context import compact
-from agents.main import error_message, parser
-from agents.providers import ModelTimeoutError, OpenAIProvider, tool_call
-from agents.storage import Store
-from agents.tools import sha256
+from foldjay.agent import Agent
+from foldjay.campus import provider_for, thinking_mode
+from foldjay.config import Config
+from foldjay.context import compact
+from foldjay.main import error_message, parser
+from foldjay.providers import ModelTimeoutError, OpenAIProvider, tool_call
+from foldjay.storage import Store
+from foldjay.tools import sha256
 
 
 def reply(*calls, text=''):
@@ -36,7 +36,7 @@ class RuntimeRepairTest(unittest.TestCase):
     def setUp(self):
         self.directory=tempfile.TemporaryDirectory()
         self.root=Path(self.directory.name)
-        self.config=Config(self.root,self.root/'.bear',evolution=False)
+        self.config=Config(self.root,self.root/'.foldjay',evolution=False)
         self.store=Store(self.config.state)
 
     def tearDown(self):
@@ -256,7 +256,7 @@ class RuntimeRepairTest(unittest.TestCase):
                 raise TimeoutError()
         events=[]
         agent=Agent(self.config,self.store,Slow(),event=lambda k,d:events.append(k))
-        with patch('agents.agent.HEARTBEAT_SECONDS',.01),self.assertRaises(ModelTimeoutError):
+        with patch('foldjay.agent.HEARTBEAT_SECONDS',.01),self.assertRaises(ModelTimeoutError):
             agent.run('inspect')
         self.assertIn('model_wait',events)
         self.assertIn('model_timeout',events)
@@ -266,14 +266,14 @@ class RuntimeRepairTest(unittest.TestCase):
 
     def test_campus_request_options_are_explicit_and_vendor_scoped(self):
         with patch.dict('os.environ',{},clear=True):
-            with patch('agents.campus.OpenAIProvider') as factory:
+            with patch('foldjay.campus.OpenAIProvider') as factory:
                 provider_for({'model':'DeepSeek-V4-Pro','base_url':'https://aigc-api.hkust-gz.edu.cn/api/v2'},key='test-only')
             self.assertEqual(factory.call_args.kwargs['thinking'],'disabled')
             self.assertEqual(factory.call_args.kwargs['max_retries'],0)
             self.assertEqual(factory.call_args.kwargs['timeout'],90)
             self.assertIsNone(thinking_mode({},'GLM-5.3-Flash'))
             self.assertEqual(thinking_mode({'thinking':'enabled'},'DSP'),'enabled')
-        with patch.dict('os.environ',{'BEAR_THINKING':'invalid'}):
+        with patch.dict('os.environ',{'FOLDJAY_THINKING':'invalid'}):
             with self.assertRaises(ValueError):
                 thinking_mode({},'DeepSeek-V4-Pro')
 

@@ -13,7 +13,7 @@ def main():
         error = None
         if method == "initialize":
             result = {"protocolVersion": "2025-06-18", "capabilities": {"tools": {}},
-                      "serverInfo": {"name": "bear-example", "version": "1.0"}}
+                      "serverInfo": {"name": "foldjay-example", "version": "1.0"}}
         elif method == "tools/list":
             result = {"tools": [{"name": "word_count", "description": "Count whitespace-separated words in text",
                 "inputSchema": {"type": "object", "properties": {"text": {"type": "string"}}, "required": ["text"], "additionalProperties": False}}]}

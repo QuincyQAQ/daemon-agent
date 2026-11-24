@@ -9,9 +9,9 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from unittest.mock import patch
 
-from agents.retrieval import rank
-from agents.skills import Skills
-from agents.storage import Store
+from foldjay.retrieval import rank
+from foldjay.skills import Skills
+from foldjay.storage import Store
 
 
 class SkillRoundtripTest(unittest.TestCase):
@@ -19,14 +19,14 @@ class SkillRoundtripTest(unittest.TestCase):
         directory = tempfile.TemporaryDirectory()
         self.addCleanup(directory.cleanup)
         self.workspace = Path(directory.name)
-        self.store = Store(self.workspace / ".bear")
+        self.store = Store(self.workspace / ".foldjay")
         self.addCleanup(self.store.close)
 
     def cli(self, *args, expected_status=0):
         result = subprocess.run(
-            [sys.executable, "-m", "agents.main", "--workspace", str(self.workspace), *args],
+            [sys.executable, "-m", "foldjay.main", "--workspace", str(self.workspace), *args],
             cwd=Path(__file__).resolve().parents[1],
-            env={**os.environ, "BEAR_PROVIDER": "demo"},
+            env={**os.environ, "FOLDJAY_PROVIDER": "demo"},
             capture_output=True, text=True, timeout=15)
         self.assertEqual(result.returncode, expected_status, result.stderr)
         return result.stdout
@@ -85,7 +85,7 @@ class SkillRoundtripTest(unittest.TestCase):
             finally:
                 store.close()
 
-        with patch("agents.skills.rank", side_effect=rank_together), ThreadPoolExecutor(max_workers=2) as pool:
+        with patch("foldjay.skills.rank", side_effect=rank_together), ThreadPoolExecutor(max_workers=2) as pool:
             searches = [pool.submit(search) for _ in range(2)]
             self.assertEqual(sorted(job.result() for job in searches), [1, 2])
         self.assertEqual(Skills(self.store).get(sid)["retrieved"], 2)

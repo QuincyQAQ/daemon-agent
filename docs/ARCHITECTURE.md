@@ -97,8 +97,8 @@ Memory 存事实与偏好；Skills 存触发条件、操作步骤及验证方式
 ## 状态目录
 
 ```text
-.bear/
-  bear.sqlite3              # 权威结构化存储
+.foldjay/
+  foldjay.sqlite3              # 权威结构化存储
   sessions/
     SESSION_ID.json         # 工作区、消息、pending、结构化状态
     SESSION_ID.lock         # 会话锁
@@ -112,4 +112,4 @@ Memory 存事实与偏好；Skills 存触发条件、操作步骤及验证方式
     RUN_ID/                 # 独立演示工作区
 ```
 
-运行时状态可能包含用户任务、源文件内容和工具输出，不加密。应将 `.bear/` 留在受控的本地磁盘并排除版本管理。
+运行时状态可能包含用户任务、源文件内容和工具输出，不加密。应将 `.foldjay/` 留在受控的本地磁盘并排除版本管理。

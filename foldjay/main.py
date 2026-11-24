@@ -51,9 +51,9 @@ def error_message(exc):
 
 
 def parser():
-    p = argparse.ArgumentParser(description="Bear Harness — 本地 Agent、Memory、Skills、MCP")
+    p = argparse.ArgumentParser(description="Foldjay Agent — 本地 Agent、Memory、Skills、MCP")
     p.add_argument("--workspace", default=".")
-    p.add_argument("--state", help="State directory (default: WORKSPACE/.bear)")
+    p.add_argument("--state", help="State directory (default: WORKSPACE/.foldjay, or existing .bear)")
     p.add_argument("--profile", type=Path, help="Explicit school API profile; use campus.sh for the default")
     sub = p.add_subparsers(dest="command")
     run = sub.add_parser("run", help="One-shot task or interactive REPL")
@@ -117,12 +117,12 @@ def repl(agent, view=None):
     if view:
         view.welcome(agent)
     else:
-        show("Bear Harness · /help 查看命令 · Ctrl-D 退出")
+        show("Foldjay Agent · /help 查看命令 · Ctrl-D 退出")
     if agent.retry_checkpoint() is not None:
         show("上次请求尚未完成。输入 /retry 可沿用已保存的任务和工具结果。")
     while True:
         try:
-            text = (view.read(agent.config.mode) if view else input("bear> ")).strip()
+            text = (view.read(agent.config.mode) if view else input("foldjay> ")).strip()
         except EOFError:
             return
         if not text:

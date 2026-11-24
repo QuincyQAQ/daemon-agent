@@ -9,13 +9,13 @@ from dataclasses import replace
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from .config import Config
+from .config import Config, default_state, setting
 from .providers import OpenAIProvider
 from .storage import atomic_write, dumps
 
 
 BASE_URL = "https://aigc-api.hkust-gz.edu.cn/api/v2"
-PROFILE = Path(__file__).resolve().parents[1] / ".bear" / "campus.json"
+PROFILE = default_state(Path.cwd()) / "campus.json"
 MAX_OUTPUT_TOKENS = 16384
 MODEL_TIMEOUT = 90
 
@@ -61,7 +61,7 @@ def load_key(profile):
 
 def read_profile(path=PROFILE):
     if not path.exists():
-        raise ValueError("Campus profile is not configured. Run ./bear.sh campus setup --from-ccr")
+        raise ValueError("Campus profile is not configured. Run ./foldjay.sh campus setup --from-ccr")
     profile = json.loads(path.read_text())
     normalize_base_url(profile["base_url"])
     return profile
@@ -73,9 +73,9 @@ def chat_models(ids):
 
 
 def thinking_mode(profile, model):
-    mode = os.getenv("BEAR_THINKING") or profile.get("thinking", "disabled")
+    mode = setting("THINKING") or profile.get("thinking", "disabled")
     if mode not in {"enabled", "disabled"}:
-        raise ValueError("BEAR_THINKING / profile thinking must be enabled or disabled")
+        raise ValueError("FOLDJAY_THINKING / profile thinking must be enabled or disabled")
     return mode if "deepseek" in model.lower() or model.lower() in {"dsp", "dsf"} else None
 
 
@@ -149,7 +149,7 @@ def setup(path=PROFILE, *, from_ccr=False, key_prompt=False, model=None, ccr_pat
 
 def apply_profile(config, path=PROFILE):
     profile = read_profile(path)
-    model = os.getenv("BEAR_MODEL") or profile["model"]
+    model = setting("MODEL") or profile["model"]
     if not chat_models([model]):
         raise ValueError("Selected model is excluded by the campus chat-model filter")
     return replace(config, provider="openai", model=model, api_base_url=BASE_URL,
@@ -165,11 +165,11 @@ def check(path=PROFILE):
     profile = read_profile(path)
     provider = provider_for(profile)
     try:
-        with tempfile.TemporaryDirectory(prefix="bear-campus-check-") as directory:
+        with tempfile.TemporaryDirectory(prefix="foldjay-campus-check-") as directory:
             workspace = Path(directory)
             marker = "HARNESS_CAMPUS_VERIFIED_" + os.urandom(6).hex()
             (workspace / "probe.txt").write_text(marker + "\n")
-            config = Config(workspace, workspace/".bear", mode="plan", evolution=False, max_steps=12)
+            config = Config(workspace, workspace/".foldjay", mode="plan", evolution=False, max_steps=12)
             store = Store(config.state)
             try:
                 agent = Agent(config, store, provider)
@@ -181,7 +181,7 @@ def check(path=PROFILE):
                     report = {"model": profile["model"], "base_url": BASE_URL, "verified": False,
                               "error_type": type(exc).__name__, "http_status": getattr(exc,"status_code",None),
                               "server_ascii_encoding_error": "ascii" in detail and "encode" in detail,
-                              "scope": "live model + Harness read-only tools + synthetic file"}
+                              "scope": "live model + Foldjay read-only tools + synthetic file"}
                     atomic_write(path.parent/"campus-check.json", json.dumps(report, ensure_ascii=False, indent=2))
                     raise
                 messages = agent.session["messages"]
@@ -189,10 +189,10 @@ def check(path=PROFILE):
                 actual = any(m["role"] == "tool" and marker in m["content"] for m in messages)
                 report = {"model": profile["model"], "base_url": BASE_URL,
                           "tool_names": tools, "verified": "read_file" in tools and actual and marker in answer,
-                          "answer": answer, "scope": "live model + Harness read-only tools + synthetic file"}
+                          "answer": answer, "scope": "live model + Foldjay read-only tools + synthetic file"}
                 atomic_write(path.parent/"campus-check.json", json.dumps(report, ensure_ascii=False, indent=2))
                 if not report["verified"]:
-                    raise RuntimeError("Live tool verification failed; inspect .bear/campus-check.json")
+                    raise RuntimeError(f"Live tool verification failed; inspect {path.parent / 'campus-check.json'}")
                 return report
             finally:
                 store.close()
@@ -201,7 +201,7 @@ def check(path=PROFILE):
 
 
 def command(args):
-    path = args.profile or PROFILE
+    path = args.profile or ((Path(args.state) if args.state else default_state(Path(args.workspace).resolve())) / "campus.json")
     if args.action == "setup":
         return setup(path, from_ccr=args.from_ccr, key_prompt=args.key_prompt, model=args.model, thinking=args.thinking)
     if args.action == "check":

@@ -4,4 +4,8 @@ project_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 if [ "$#" -eq 0 ]; then
     set -- run
 fi
-exec "$project_dir/bear.sh" --profile "$project_dir/.bear/campus.json" "$@"
+state_dir="$project_dir/.foldjay"
+if [[ ! -e "$state_dir" && -d "$project_dir/.bear" ]]; then
+    state_dir="$project_dir/.bear"
+fi
+exec "$project_dir/foldjay.sh" --profile "$state_dir/campus.json" "$@"
