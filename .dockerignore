@@ -1,0 +1,9 @@
+*
+!agents/
+!agents/**
+!examples/
+!examples/**
+!tests/
+!tests/**
+**/__pycache__/
+**/*.pyc

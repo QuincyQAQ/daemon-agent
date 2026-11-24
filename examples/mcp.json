@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "example": {
+      "command": ["python3", "examples/mcp_server.py"],
+      "env_from": {}
+    }
+  }
+}

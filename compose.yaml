@@ -1,0 +1,27 @@
+services:
+  bear:
+    build:
+      context: .
+      target: core
+    user: "${BEAR_UID:-1000}:${BEAR_GID:-1000}"
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+    init: true
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 128
+    mem_limit: 1g
+    cpus: 2
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    volumes:
+      - ${BEAR_WORKSPACE:-.}:/workspace
+    environment:
+      BEAR_PROVIDER: ${BEAR_PROVIDER:-demo}
+      BEAR_MODEL: ${BEAR_MODEL:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_BASE_URL: ${ANTHROPIC_BASE_URL:-}

@@ -1,0 +1,49 @@
+name: Bear Harness checks
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.12', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: ./scripts/check.sh
+      - run: python -m pip install .
+      - name: Run installed CLI outside checkout
+        working-directory: ${{ runner.temp }}
+        run: |
+          bear demo > demo.json
+          python -c "import json; r=json.load(open('demo.json')); assert r['resumed'] and r['file_content']=='Verified Harness\n'"
+
+  model-sdks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install '.[models]'
+      - run: python -m unittest tests.test_sdk_transport -v
+
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build --target core -t bear-harness:test .
+      - run: docker run --rm bear-harness:test demo
+      - name: Check live image dependencies
+        run: |
+          docker build --target live -t bear-harness:live .
+          docker run --rm --entrypoint python bear-harness:live -c 'import openai, anthropic'
+      - name: Run Compose with a fresh writable workspace
+        run: |
+          export BEAR_WORKSPACE="$(mktemp -d)" BEAR_UID="$(id -u)" BEAR_GID="$(id -g)"
+          docker compose run --build --rm -T bear demo
+          test -s "$BEAR_WORKSPACE/.bear/demo/latest-report.json"

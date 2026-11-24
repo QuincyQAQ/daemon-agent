@@ -1,0 +1,4 @@
+services:
+  bear:
+    build:
+      target: live

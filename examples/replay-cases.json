@@ -1,0 +1,4 @@
+[
+  {"query": "如何避免覆盖其他人的文件修改", "expected_terms": ["sha256", "expected_hash", "重新读取"]},
+  {"query": "精确替换后如何确认结果", "expected_terms": ["只匹配一次", "核对预期内容", "验证"]}
+]

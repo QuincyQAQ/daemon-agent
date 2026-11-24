@@ -1,0 +1,18 @@
+.bear/
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.env
+.env.*
+!.env.example
+.coverage
+htmlcov/
+
+# Local project inputs and historical session reports
+/pic/
+/reports/
+.pytest_cache/
+.ruff_cache/
