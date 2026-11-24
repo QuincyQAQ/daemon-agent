@@ -2,6 +2,8 @@
 
 一个可在本地运行的 Python Agent。模型决定下一步调用哪个工具，运行时负责参数检查、操作审批、预算和持久化。每次读取、编辑与重试都有记录可供检查。核心仅依赖 Python 3.10+ 标准库，支持 Linux 和 macOS。
 
+![Bear Harness 在 Plan 模式下显示模型和快捷命令](docs/terminal-preview.png)
+
 ## 三分钟演示
 
 在仓库根目录运行：
@@ -29,7 +31,7 @@ cat .bear/demo/latest-report.json
 从源码运行时使用 `./bear.sh`。要安装 `bear` 命令和模型适配器，在虚拟环境中运行：
 
 ```bash
-python -m pip install '.[models]'
+python -m pip install '.[models,ui]'
 bear doctor
 ```
 
@@ -41,6 +43,8 @@ OpenAI 或 Chat Completions 兼容端点使用 `BEAR_PROVIDER=openai`、`BEAR_MO
 ./bear.sh sessions
 ./bear.sh run --resume SESSION_ID --retry
 ```
+
+安装 `ui` 后，交互终端会显示模型、当前模式和工具进度，并排版 Markdown 回复。可用 `./campus.sh run --plain` 切回文本界面；管道和单次任务沿用文本输出。
 
 Plan 允许只读检查。Act 在每次写入、运行命令或调用外部 MCP 工具前请求批准。REPL 支持 `/plan`、`/act`、`/compact`、`/retry`、`/memory`、`/skills` 和 `/help`。使用 `--workspace`、`--state` 时将它们放在子命令前。会话、工具输出和记忆保存在本地 `.bear/`；使用远端模型时，任务及相关上下文会发送到所配置的服务。
 

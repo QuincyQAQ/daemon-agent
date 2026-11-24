@@ -61,6 +61,7 @@ def parser():
     run.add_argument("--resume", metavar="SESSION_ID")
     run.add_argument("--retry", action="store_true", help="Retry a saved interrupted model request; requires --resume")
     run.add_argument("--mode", choices=["act", "plan"], default="act")
+    run.add_argument("--plain", action="store_true", help="Use the plain interactive terminal and event log")
     run.add_argument("--max-steps", type=int, default=24)
     run.add_argument("--context-chars", type=int, default=128000)
     run.add_argument("--no-evolution", action="store_true")
@@ -110,13 +111,18 @@ def parser():
     return p
 
 
-def repl(agent):
-    output("Bear Harness · /help 查看命令 · Ctrl-D 退出")
+def repl(agent, view=None):
+    show = view.detail if view else output
+    answer = view.answer if view else output
+    if view:
+        view.welcome(agent)
+    else:
+        show("Bear Harness · /help 查看命令 · Ctrl-D 退出")
     if agent.retry_checkpoint() is not None:
-        output("上次请求尚未完成。输入 /retry 可沿用已保存的任务和工具结果。")
+        show("上次请求尚未完成。输入 /retry 可沿用已保存的任务和工具结果。")
     while True:
         try:
-            text = input("bear> ").strip()
+            text = (view.read(agent.config.mode) if view else input("bear> ")).strip()
         except EOFError:
             return
         if not text:
@@ -126,27 +132,32 @@ def repl(agent):
             if command in {"/exit", "/quit"}:
                 return
             elif command == "/help":
-                output("/plan /act /compact /retry /skills [query] /memory query /feedback text /extract_now text /session /exit")
+                if view:
+                    view.help()
+                    continue
+                show("/plan /act /compact /retry /skills [query] /memory query /feedback text /extract_now text /session /exit")
             elif command in {"/plan", "/act"}:
                 agent.config.mode = agent.policy.mode = command[1:]
-                output("mode=" + command[1:])
+                show("mode=" + command[1:])
             elif command == "/compact":
-                output(compact(agent.session, agent.store, agent.provider, max_chars=agent.config.context_chars))
+                show(compact(agent.session, agent.store, agent.provider, max_chars=agent.config.context_chars))
             elif command == "/retry":
-                output(agent.retry())
+                answer(agent.retry())
             elif command == "/skills":
-                output(agent.skills.search(arg) if arg else agent.skills.list())
+                show(agent.skills.search(arg) if arg else agent.skills.list())
             elif command == "/memory":
-                output(agent.memory.search(arg))
+                show(agent.memory.search(arg))
             elif command in {"/feedback", "/extract_now"}:
-                output(agent.feedback(arg))
+                show(agent.feedback(arg))
             elif command == "/session":
-                output(agent.session["id"])
+                show(agent.session["id"])
             elif command.startswith("/"):
-                output("未知命令，使用 /help")
+                show("未知命令，使用 /help")
             else:
-                output(agent.run(text))
-        except (Exception,) as exc:
+                answer(agent.run(text))
+        except Exception as exc:
+            if view:
+                view.stop()
             print(error_message(exc), file=sys.stderr)
             agent.session = agent.store.load(agent.session["id"], agent.config.workspace)
 
@@ -158,9 +169,20 @@ def run_agent(args, config, store):
     with store.session_lock(session["id"]):
         if args.resume:
             session = store.load(args.resume, config.workspace)
-        agent = Agent(config, store, provider, approval, session, event=events)
+        view = None
+        if (not args.task and not args.retry and not args.plain
+                and all(stream.isatty() for stream in (sys.stdin, sys.stdout, sys.stderr))):
+            try:
+                from .terminal import TerminalChat
+            except ModuleNotFoundError as exc:
+                if exc.name != "rich":
+                    raise
+            else:
+                view = TerminalChat()
+        agent = Agent(config, store, provider, approval, session, event=view.event if view else events)
         store.save(session)
-        print("session=" + session["id"], file=sys.stderr)
+        if not view:
+            print("session=" + session["id"], file=sys.stderr)
         try:
             if args.mcp_config:
                 settings = json.loads(args.mcp_config.read_text())
@@ -176,8 +198,10 @@ def run_agent(args, config, store):
             elif args.task:
                 output(agent.run(args.task))
             else:
-                repl(agent)
+                repl(agent, view)
         finally:
+            if view:
+                view.stop()
             for client in reversed(clients):
                 client.close()
             if hasattr(provider, "close"):
