@@ -1,10 +1,12 @@
 # Daemon Agent
 
-本分支面向港科广实验室的夜间科研任务。可以从实验计划、作业记录和评测文件生成可追溯的晨报。
+![晨光照进机房，一只红色折纸鸟停在服务器上](docs/daemon-agent-dawn.jpg)
 
-一个可在本地运行的 Python Agent。模型决定下一步调用哪个工具，运行时负责参数检查、操作审批、预算和持久化。每次读取、编辑与重试都有记录可供检查。核心仅依赖 Python 3.10+ 标准库，支持 Linux 和 macOS。
+Daemon Agent 为港科广实验室提交并跟踪夜间 Slurm 作业。作业结束后，它把实验记录整理成晨报，列出可以配对的分数、缺失的评测，以及对应的原始文件。
 
-![Daemon Agent 在 Plan 模式下显示模型和快捷命令](docs/terminal-preview.png)
+[实验晨报](#实验晨报) · [查看集群显卡](#查看-slurm-集群显卡) · [夜间值守](#slurm-夜间值守) · [三分钟演示](#三分钟演示)
+
+Agent 可在本地运行。模型决定下一步调用哪个工具，运行时负责参数检查、操作审批、预算和持久化。每次读取、编辑与重试都有记录可供检查。核心仅依赖 Python 3.10+ 标准库，支持 Linux 和 macOS。
 
 获取此分支：
 
@@ -20,6 +22,8 @@ cd daemon-agent
 ```bash
 ./daemon-agent.sh morning-report examples/overnight
 ```
+
+![合成样例的三个 seed 中有两对可比较：seed 0 的 A、B 得分为 0.40、0.55，seed 1 为 0.70、0.72。B 组 seed 2 缺少评测文件。](docs/morning-report-preview.png)
 
 `experiment.json` 列出两个对照组、预期的 seeds 和统一的评测场景。每个 `组/seed/` 目录提供 `job.json` 和 `eval.json`。两组都记录了作业完成、组名与 seed 及场景匹配、分数有效时，才列出配对结果。示例中 B 组 seed 2 缺评测，晨报列出两对分数和六项核验依据。加 `--json` 可导出结构化结果。交互模式可让 Agent 调用同一只读工具 `morning_report`。输入格式见 [样例](examples/overnight)。
 
@@ -98,6 +102,8 @@ OpenAI 或 Chat Completions 兼容端点使用 `FOLDJAY_PROVIDER=openai`、`FOLD
 ```
 
 安装 `ui` 后，交互终端会显示模型、当前模式和工具进度，并排版 Markdown 回复。可用 `./campus.sh run --plain` 切回文本界面；管道和单次任务沿用文本输出。
+
+![Daemon Agent 在 Plan 模式下显示模型和快捷命令](docs/terminal-preview.png)
 
 Plan 允许只读检查。Act 在每次写入、运行命令或调用外部 MCP 工具前请求批准。REPL 支持 `/plan`、`/act`、`/compact`、`/retry`、`/memory`、`/skills` 和 `/help`。使用 `--workspace`、`--state` 时将它们放在子命令前。会话、工具输出和记忆保存在本地 `.foldjay/`；使用远端模型时，任务及相关上下文会发送到所配置的服务。
 
