@@ -73,7 +73,8 @@ class MorningReportTest(unittest.TestCase):
         result = morning_report(self.policy, "runs")
         self.assertEqual([p["seed"] for p in result["pairs"]], [1])
         self.assertIn("字段重复", result["runs"][0]["issues"][0])
-        self.assertIn("嵌套层数", result["runs"][4]["issues"][0])
+        # Decoders may reject excessive nesting or finish decoding the top-level array.
+        self.assertIn("runs/A/2/eval.json 无法采信", result["runs"][4]["issues"][0])
 
     def test_state_file_is_protected_and_rendering_preserves_lines(self):
         self.policy.state.mkdir()
