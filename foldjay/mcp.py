@@ -32,7 +32,7 @@ class MCPClient:
         self.thread.start()
         try:
             info = self.request("initialize", {"protocolVersion": "2025-06-18", "capabilities": {},
-                                                "clientInfo": {"name": "foldjay-agent", "version": "0.1.0"}})
+                                                "clientInfo": {"name": "daemon-agent", "version": "0.1.0"}})
             if info.get("protocolVersion") not in {"2025-06-18", "2024-11-05"}:
                 raise ValueError("Unsupported MCP protocol version")
             self.notify("notifications/initialized", {})

@@ -1,5 +1,3 @@
 #!/usr/bin/env bash
-set -euo pipefail
-project_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-export PYTHONPATH="$project_dir${PYTHONPATH:+:$PYTHONPATH}"
-exec "$project_dir/scripts/python.sh" -m foldjay.main "$@"
+# Compatibility entry point for existing checkouts.
+exec "$(dirname -- "${BASH_SOURCE[0]}")/daemon-agent.sh" "$@"

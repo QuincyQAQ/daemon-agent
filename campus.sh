@@ -8,4 +8,4 @@ state_dir="$project_dir/.foldjay"
 if [[ ! -e "$state_dir" && -d "$project_dir/.bear" ]]; then
     state_dir="$project_dir/.bear"
 fi
-exec "$project_dir/foldjay.sh" --profile "$state_dir/campus.json" "$@"
+exec "$project_dir/daemon-agent.sh" --profile "$state_dir/campus.json" "$@"

@@ -32,7 +32,7 @@
 
 ### `Python 3.10+ is required`
 
-使用 `./foldjay.sh`，或设置 `FOLDJAY_PYTHON=/usr/bin/python3.10`。不要在默认 Python 3.8 环境直接运行包。
+使用 `./daemon-agent.sh`，或设置 `FOLDJAY_PYTHON=/usr/bin/python3.10`。不要在默认 Python 3.8 环境直接运行包。
 
 ### `No module named pip` / `ensurepip is not available`
 

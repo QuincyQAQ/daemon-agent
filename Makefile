@@ -4,7 +4,7 @@ export FOLDJAY_PYTHON := $(PYTHON)
 endif
 
 demo:
-	./foldjay.sh demo
+	./daemon-agent.sh demo
 test:
 	./scripts/python.sh -m unittest discover -s tests -v
 check:

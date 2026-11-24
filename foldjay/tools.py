@@ -9,6 +9,7 @@ import tempfile
 import time
 from dataclasses import dataclass
 
+from .morning import morning_report
 from .permissions import Denied
 from .storage import atomic_write
 
@@ -63,6 +64,8 @@ class Tools:
     def __init__(self, policy, store, timeout=30):
         self.policy, self.store, self.timeout = policy, store, min(timeout, 120)
         self.items = {}
+        self.add(Tool("morning_report", "Verify two experiment groups against experiment.json and return paired scores and evidence.",
+                      schema({"path": STRING}, ["path"]), self.morning_report))
         self.add(Tool("list_files", "List workspace files, excluding protected paths.",
                       schema({"path": STRING}), self.list_files))
         self.add(Tool("read_file", "Read UTF-8 text and its sha256. Large files require offset/limit.",
@@ -76,6 +79,9 @@ class Tools:
                       schema({"path": STRING, "old": STRING, "new": STRING, "expected_hash": STRING}, ["path", "old", "new", "expected_hash"]), self.edit_file, "write"))
         self.add(Tool("shell", "Execute a shell command after explicit approval. Every command may mutate or access the host.",
                       schema({"command": STRING}, ["command"]), self.shell, "execute"))
+
+    def morning_report(self, path):
+        return morning_report(self.policy, path)
 
     def add(self, tool):
         if tool.name in self.items:

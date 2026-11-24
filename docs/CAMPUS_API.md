@@ -6,13 +6,13 @@ HKUST(GZ) AIGC 网关使用 OpenAI 兼容协议。有效模型由当前账号在
 
 ```bash
 # 使用已导出的 OPENAI_API_KEY
-./foldjay.sh campus setup
+./daemon-agent.sh campus setup
 
 # 或在隐藏输入提示中输入密钥
-./foldjay.sh campus setup --key-prompt
+./daemon-agent.sh campus setup --key-prompt
 
 # 或引用已有的 Claude Code Router 学校配置
-./foldjay.sh campus setup --from-ccr
+./daemon-agent.sh campus setup --from-ccr
 ```
 
 配置保存到本机 `.foldjay/`。选择环境变量或 CCR 时只记录来源；隐藏输入方式将密钥保存为权限 600 的独立文件。连接只允许配置的学校 HTTPS 端点，采用 TLS 校验。

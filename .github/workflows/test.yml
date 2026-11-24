@@ -1,4 +1,4 @@
-name: Foldjay Agent checks
+name: Daemon Agent checks
 on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
@@ -19,8 +19,8 @@ jobs:
       - name: Run installed CLI outside checkout
         working-directory: ${{ runner.temp }}
         run: |
-          foldjay demo > demo.json
-          python -c "import json; r=json.load(open('demo.json')); assert r['resumed'] and r['file_content']=='Verified Foldjay\n'"
+          daemon-agent demo > demo.json
+          python -c "import json; r=json.load(open('demo.json')); assert r['resumed'] and r['file_content']=='Verified Daemon Agent\n'"
 
   model-sdks:
     runs-on: ubuntu-latest
@@ -36,12 +36,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - run: docker build --target core -t foldjay-agent:test .
-      - run: docker run --rm foldjay-agent:test demo
+      - run: docker build --target core -t daemon-agent:test .
+      - run: docker run --rm daemon-agent:test demo
       - name: Check live image dependencies
         run: |
-          docker build --target live -t foldjay-agent:live .
-          docker run --rm --entrypoint python foldjay-agent:live -c 'import openai, anthropic'
+          docker build --target live -t daemon-agent:live .
+          docker run --rm --entrypoint python daemon-agent:live -c 'import openai, anthropic'
       - name: Run Compose with a fresh writable workspace
         run: |
           export FOLDJAY_WORKSPACE="$(mktemp -d)" FOLDJAY_UID="$(id -u)" FOLDJAY_GID="$(id -g)"

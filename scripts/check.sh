@@ -4,4 +4,4 @@ project_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$project_dir"
 ./scripts/python.sh -m compileall -q foldjay examples tests
 ./scripts/python.sh -m unittest discover -s tests -v
-./foldjay.sh doctor
+./daemon-agent.sh doctor

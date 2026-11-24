@@ -70,12 +70,12 @@ class Store:
         return self.root / "sessions" / (sid + ".json")
 
     @contextlib.contextmanager
-    def session_lock(self, sid):
+    def session_lock(self, sid, *, wait=False):
         path = self.session_path(sid).with_suffix(".lock")
         path.parent.mkdir(parents=True, exist_ok=True)
         with path.open("w") as lock:
             try:
-                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                fcntl.flock(lock, fcntl.LOCK_EX if wait else fcntl.LOCK_EX | fcntl.LOCK_NB)
             except BlockingIOError:
                 raise RuntimeError("This session is already running") from None
             try:

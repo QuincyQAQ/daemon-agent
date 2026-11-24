@@ -15,7 +15,7 @@ class Scenario(DemoProvider):
     def complete(self, messages, tools):
         self.step += 1
         if self.step == 1:
-            name, args = "write_file", {"path": "demo-note.txt", "content": "Hello Foldjay\n", "expected_hash": "NEW"}
+            name, args = "write_file", {"path": "demo-note.txt", "content": "Hello Daemon Agent\n", "expected_hash": "NEW"}
         elif self.step == 2:
             name, args = "read_file", {"path": "demo-note.txt"}
         elif self.step == 3:

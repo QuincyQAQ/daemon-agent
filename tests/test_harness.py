@@ -414,7 +414,7 @@ class WorkspaceTest(unittest.TestCase):
 
     def test_demo_end_to_end(self):
         result = run_demo(self.root/"demo")
-        self.assertEqual(result["file_content"],"Verified Foldjay\n")
+        self.assertEqual(result["file_content"],"Verified Daemon Agent\n")
         self.assertTrue(result["resumed"])
         self.assertEqual(result["evaluation"]["score"],1)
         self.assertEqual(result["child"]["kind"],"explore")

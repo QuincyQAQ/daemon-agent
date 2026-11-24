@@ -61,7 +61,7 @@ def load_key(profile):
 
 def read_profile(path=PROFILE):
     if not path.exists():
-        raise ValueError("Campus profile is not configured. Run ./foldjay.sh campus setup --from-ccr")
+        raise ValueError("Campus profile is not configured. Run ./daemon-agent.sh campus setup --from-ccr")
     profile = json.loads(path.read_text())
     normalize_base_url(profile["base_url"])
     return profile
@@ -181,7 +181,7 @@ def check(path=PROFILE):
                     report = {"model": profile["model"], "base_url": BASE_URL, "verified": False,
                               "error_type": type(exc).__name__, "http_status": getattr(exc,"status_code",None),
                               "server_ascii_encoding_error": "ascii" in detail and "encode" in detail,
-                              "scope": "live model + Foldjay read-only tools + synthetic file"}
+                              "scope": "live model + Daemon Agent read-only tools + synthetic file"}
                     atomic_write(path.parent/"campus-check.json", json.dumps(report, ensure_ascii=False, indent=2))
                     raise
                 messages = agent.session["messages"]
@@ -189,7 +189,7 @@ def check(path=PROFILE):
                 actual = any(m["role"] == "tool" and marker in m["content"] for m in messages)
                 report = {"model": profile["model"], "base_url": BASE_URL,
                           "tool_names": tools, "verified": "read_file" in tools and actual and marker in answer,
-                          "answer": answer, "scope": "live model + Foldjay read-only tools + synthetic file"}
+                          "answer": answer, "scope": "live model + Daemon Agent read-only tools + synthetic file"}
                 atomic_write(path.parent/"campus-check.json", json.dumps(report, ensure_ascii=False, indent=2))
                 if not report["verified"]:
                     raise RuntimeError(f"Live tool verification failed; inspect {path.parent / 'campus-check.json'}")

@@ -23,7 +23,7 @@ class TerminalChat:
     def welcome(self, agent):
         config = agent.config
         self.out.print()
-        self.out.print(Rule(Text("Foldjay Agent", style="bold cyan"), align="left", style="cyan"))
+        self.out.print(Rule(Text("Daemon Agent", style="bold cyan"), align="left", style="cyan"))
         self.out.print(Text.assemble((visible(config.model or config.provider), "bold"),
                                      ("  ·  ", "dim"), visible(config.workspace.name or config.workspace),
                                      ("  ·  " + agent.session["id"][:8], "dim")))
@@ -36,7 +36,7 @@ class TerminalChat:
 
     def answer(self, text):
         self.out.print()
-        self.out.print(Text("Foldjay", style="bold cyan"))
+        self.out.print(Text("Daemon Agent", style="bold cyan"))
         self.out.print(Markdown(visible(text), hyperlinks=False))
         self.out.print()
 

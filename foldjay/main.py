@@ -51,11 +51,13 @@ def error_message(exc):
 
 
 def parser():
-    p = argparse.ArgumentParser(description="Foldjay Agent — 本地 Agent、Memory、Skills、MCP")
+    p = argparse.ArgumentParser(prog="daemon-agent", description="Daemon Agent — 本地 Agent、Memory、Skills、MCP")
     p.add_argument("--workspace", default=".")
     p.add_argument("--state", help="State directory (default: WORKSPACE/.foldjay, or existing .bear)")
     p.add_argument("--profile", type=Path, help="Explicit school API profile; use campus.sh for the default")
     sub = p.add_subparsers(dest="command")
+    from . import overnight
+    overnight.add_parser(sub)
     run = sub.add_parser("run", help="One-shot task or interactive REPL")
     run.add_argument("task", nargs="?")
     run.add_argument("--resume", metavar="SESSION_ID")
@@ -67,6 +69,9 @@ def parser():
     run.add_argument("--no-evolution", action="store_true")
     run.add_argument("--mcp-config", type=Path)
     sub.add_parser("demo", help="Run a deterministic offline end-to-end demo")
+    report = sub.add_parser("morning-report", help="Check experiment records and report comparable seeds")
+    report.add_argument("path", help="Workspace directory containing experiment.json")
+    report.add_argument("--json", action="store_true", help="Print machine-readable evidence")
     sub.add_parser("doctor", help="Check local configuration without displaying credentials")
     campus = sub.add_parser("campus", help="Configure school API, discover models and verify tool calls")
     campus_actions = campus.add_subparsers(dest="action", required=True)
@@ -117,12 +122,12 @@ def repl(agent, view=None):
     if view:
         view.welcome(agent)
     else:
-        show("Foldjay Agent · /help 查看命令 · Ctrl-D 退出")
+        show("Daemon Agent · /help 查看命令 · Ctrl-D 退出")
     if agent.retry_checkpoint() is not None:
         show("上次请求尚未完成。输入 /retry 可沿用已保存的任务和工具结果。")
     while True:
         try:
-            text = (view.read(agent.config.mode) if view else input("foldjay> ")).strip()
+            text = (view.read(agent.config.mode) if view else input("daemon-agent> ")).strip()
         except EOFError:
             return
         if not text:
@@ -225,6 +230,19 @@ def main(argv=None):
         config = Config.from_env(args.workspace, args.state,
             mode=getattr(args,"mode","act"), max_steps=getattr(args,"max_steps",24),
             context_chars=getattr(args,"context_chars",48000), evolution=not getattr(args,"no_evolution",False))
+        if args.command == "morning-report":
+            from .morning import morning_report, render_report
+            report = morning_report(Policy(config.workspace, config.state, "plan"), args.path)
+            output(report if args.json else render_report(report))
+            return 0
+        if args.command == "overnight":
+            from .overnight import command
+            store = Store(config.state)
+            result = command(args, config, store)
+            output(result)
+            if result.get("report"):
+                return int(bool(result.get("report_error")) or result["state"] != "COMPLETED" or result["exit_code"] != "0:0")
+            return 0
         if args.profile:
             from .campus import apply_profile
             config = apply_profile(config, args.profile)
@@ -305,6 +323,9 @@ def main(argv=None):
             output(report)
         return 0
     except KeyboardInterrupt:
+        if args.command == "overnight":
+            print(f"已中断；可用 overnight status {args.run_id} 核对作业。", file=sys.stderr)
+            return 130
         print("已中断；已保存的会话可用 --resume 恢复。", file=sys.stderr)
         return 130
     except Exception as exc:
