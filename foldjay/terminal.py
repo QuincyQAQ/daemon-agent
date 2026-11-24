@@ -1,5 +1,6 @@
 """Rich presentation for interactive terminals. The runtime does not depend on it."""
 import json
+import re
 import sys
 
 from rich.console import Console
@@ -31,8 +32,16 @@ class TerminalChat:
         self.out.print()
 
     def read(self, mode):
-        color = "cyan" if mode == "plan" else "yellow"
-        return self.out.input(Text.assemble((mode.upper(), "bold " + color), (" › ", color)))
+        prompt = f"{mode.upper()} › "
+        editor = sys.modules.get("readline")
+        gnu_readline = editor and getattr(editor, "backend", "readline") == "readline" and "libedit" not in (editor.__doc__ or "")
+        if self.out.color_system and gnu_readline:
+            color = "cyan" if mode == "plan" else "yellow"
+            with self.out.capture() as rendered:
+                self.out.print(Text(prompt, style="bold " + color), end="")
+            # GNU readline needs non-printing SGR spans marked to wrap at the right column.
+            prompt = re.sub(r"\x1b\[[0-9;]*m", lambda m: "\001" + m[0] + "\002", rendered.get())
+        return input(prompt)
 
     def answer(self, text):
         self.out.print()

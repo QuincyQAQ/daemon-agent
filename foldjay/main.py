@@ -124,6 +124,12 @@ def parser():
 
 
 def repl(agent, view=None):
+    if sys.stdin.isatty() and sys.stdout.isatty():
+        try:
+            # Importing readline installs the Unicode-aware editor for built-in input().
+            import readline
+        except ImportError:
+            pass  # Some minimal Python builds provide only the terminal's basic input.
     show = view.detail if view else output
     answer = view.answer if view else output
     if view:
