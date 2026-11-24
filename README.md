@@ -23,6 +23,22 @@ cd daemon-agent
 
 `experiment.json` 列出两个对照组、预期的 seeds 和统一的评测场景。每个 `组/seed/` 目录提供 `job.json` 和 `eval.json`。两组都记录了作业完成、组名与 seed 及场景匹配、分数有效时，才列出配对结果。示例中 B 组 seed 2 缺评测，晨报列出两对分数和六项核验依据。加 `--json` 可导出结构化结果。交互模式可让 Agent 调用同一只读工具 `morning_report`。输入格式见 [样例](examples/overnight)。
 
+## 查看 Slurm 集群显卡
+
+在登录节点运行 `./daemon-agent.sh gpus` 查看控制器对当前账户可见的所有 GPU 节点、型号、分区和分配数。每个节点只统计一次，跨分区共享的节点会列出所有所属分区。追加 `--free` 筛选候选，`--json` 导出完整快照。查询使用 `scontrol -a -o -d show nodes` 的 GRES、已分配索引及节点状态，并用 `sinfo --local -a` 确认分区是否启用。
+
+从个人电脑查港科广 HPC2 时，设置你在 SSH 配置中使用的登录别名。若使用已有的 SSH 主连接，可同时设置其 socket。CLI 和交互 Agent 使用相同的配置。
+
+```bash
+export DAEMON_SLURM_HOST=qli
+export DAEMON_SLURM_SOCKET="$XDG_RUNTIME_DIR/qli-hpc2.sock"  # 使用现有主连接时设置
+./daemon-agent.sh gpus --json > gpu-inventory.json
+./daemon-agent.sh gpus --free
+./daemon-agent.sh gpus --free --model a40 --partition debug
+```
+
+也可以在 Plan 模式问「列出港科广所有 GPU」「现在有哪些空闲 A40，在哪些节点和分区？」。模型可调用只读工具 `gpu_inventory`，使用快照时间戳逐页读取同一次查询。未分配数包含不可调度节点上的卡；候选仅包括有启用分区、状态正常且通过基本 CPU、内存和 GRES 检查的节点。账户权限、租用分区、预约和 QoS 仍影响实际分配。输出的 IDX 属于节点上的 Slurm 编号。硬件 UUID、实时利用率和作业内 CUDA 映射请在已获配节点用 `nvidia-smi` 核对。
+
 ## Slurm 夜间值守
 
 在有 `sbatch`、`squeue`、`sacct` 和 `scontrol` 的登录节点运行，工作区与状态目录须位于计算节点也能访问的共享文件系统上。下面的命令授权一次合成数据回放，预算为一个 CPU 核、512 MiB、两分钟。分区和 QoS 按自己的集群设置。

@@ -64,6 +64,11 @@ class Tools:
     def __init__(self, policy, store, timeout=30):
         self.policy, self.store, self.timeout = policy, store, min(timeout, 120)
         self.items = {}
+        self.gpu_snapshot = None
+        self.add(Tool("gpu_inventory", "查询 Slurm 全部 GPU 或空闲候选。Slurm IDX is node-local. "
+                      "Use free_only for free GPUs; follow next_offset and snapshot for the complete list.",
+                      schema({"free_only": {"type": "boolean"}, "model": STRING, "partition": STRING,
+                              "offset": {"type": "integer"}, "snapshot": STRING}), self.gpu_inventory))
         self.add(Tool("morning_report", "Verify two experiment groups against experiment.json and return paired scores and evidence.",
                       schema({"path": STRING}, ["path"]), self.morning_report))
         self.add(Tool("list_files", "List workspace files, excluding protected paths.",
@@ -79,6 +84,23 @@ class Tools:
                       schema({"path": STRING, "old": STRING, "new": STRING, "expected_hash": STRING}, ["path", "old", "new", "expected_hash"]), self.edit_file, "write"))
         self.add(Tool("shell", "Execute a shell command after explicit approval. Every command may mutate or access the host.",
                       schema({"command": STRING}, ["command"]), self.shell, "execute"))
+
+    def gpu_inventory(self, free_only=False, model=None, partition=None, offset=0, snapshot=None):
+        from .gpus import inventory, select
+        if offset < 0:
+            raise ValueError("offset must be nonnegative")
+        if snapshot is not None:
+            if not self.gpu_snapshot or self.gpu_snapshot["observed_at"] != snapshot:
+                raise ValueError("GPU snapshot expired. Query again from offset 0.")
+        elif offset:
+            raise ValueError("Pass the snapshot timestamp when requesting another page")
+        else:
+            self.gpu_snapshot = inventory()
+        report = select(self.gpu_snapshot, free_only=free_only, model=model, partition=partition)
+        rows = report["rows"]
+        report.update(rows=rows[offset:offset+12], row_count=len(rows),
+                      next_offset=offset+12 if offset+12 < len(rows) else None)
+        return report
 
     def morning_report(self, path):
         return morning_report(self.policy, path)

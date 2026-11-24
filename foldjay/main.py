@@ -58,6 +58,13 @@ def parser():
     sub = p.add_subparsers(dest="command")
     from . import overnight
     overnight.add_parser(sub)
+    gpus = sub.add_parser("gpus", help="List all cluster GPU nodes or only candidate free GPUs")
+    gpus.add_argument("--free", action="store_true", help="Show unallocated GPUs on candidate nodes")
+    gpus.add_argument("--partition")
+    gpus.add_argument("--model")
+    gpus.add_argument("--ssh", help="SSH login host or alias (default: DAEMON_SLURM_HOST or local)")
+    gpus.add_argument("--control-path", help="Existing SSH master socket")
+    gpus.add_argument("--json", action="store_true")
     run = sub.add_parser("run", help="One-shot task or interactive REPL")
     run.add_argument("task", nargs="?")
     run.add_argument("--resume", metavar="SESSION_ID")
@@ -223,6 +230,12 @@ def main(argv=None):
         return 0
     store = None
     try:
+        if args.command == "gpus":
+            from .gpus import inventory, render, select
+            report = select(inventory(args.ssh, args.control_path), free_only=args.free,
+                            partition=args.partition, model=args.model)
+            output(report if args.json else render(report))
+            return 0
         if args.command == "campus":
             from .campus import command
             output(command(args))
