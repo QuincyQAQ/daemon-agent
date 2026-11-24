@@ -2,10 +2,10 @@
 
 [项目首页](../README.md) · [架构设计](ARCHITECTURE.md) · [权限与故障排查](OPERATIONS.md)
 
-以下命令从 `feat/daemon-agent` 分支的项目根目录运行。生成示例晨报和运行离线演示需要 Python 3.10+，在 Linux 和 macOS 上均可使用。
+以下命令从项目根目录运行。生成示例晨报和运行离线演示需要 Python 3.10+，在 Linux 和 macOS 上均可使用。
 
 ```bash
-git clone --branch feat/daemon-agent https://github.com/QuincyQAQ/foldjay-agent.git daemon-agent
+git clone https://github.com/QuincyQAQ/daemon-agent.git
 cd daemon-agent
 ```
 

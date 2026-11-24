@@ -14,7 +14,7 @@
 
 <p align="center">
   <a href="pyproject.toml"><img alt="Python 3.10 或更高版本" src="https://img.shields.io/badge/Python-3.10%2B-B74B30"></a>
-  <a href="https://github.com/QuincyQAQ/foldjay-agent/actions/workflows/test.yml?query=branch%3Afeat%2Fdaemon-agent"><img alt="当前分支的自动化检查状态" src="https://github.com/QuincyQAQ/foldjay-agent/actions/workflows/test.yml/badge.svg?branch=feat%2Fdaemon-agent"></a>
+  <a href="https://github.com/QuincyQAQ/daemon-agent/actions/workflows/test.yml?query=branch%3Amain"><img alt="当前分支的自动化检查状态" src="https://github.com/QuincyQAQ/daemon-agent/actions/workflows/test.yml/badge.svg?branch=main"></a>
 </p>
 
 <p align="center">
@@ -35,7 +35,7 @@
 在 Linux 或 macOS 上用 Python 3.10+ 跑一个合成实验。下载源码后，示例可离线运行，无需 GPU、Slurm 或模型密钥。
 
 ```bash
-git clone --branch feat/daemon-agent https://github.com/QuincyQAQ/foldjay-agent.git daemon-agent
+git clone https://github.com/QuincyQAQ/daemon-agent.git
 cd daemon-agent
 ./daemon-agent.sh morning-report examples/overnight
 ```

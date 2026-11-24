@@ -21,4 +21,4 @@
 
 在安装了 `.[models,ui]` 的环境运行 `./scripts/check.sh` 可覆盖全部测试。仅使用标准库也可以测试核心，缺少可选依赖时对应的测试会标记为跳过。[升级兼容测试](../tests/test_upgrade.py) 检查旧数据库、会话、环境变量优先级以及状态目录的权限保护。
 
-[GitHub Actions](https://github.com/QuincyQAQ/foldjay-agent/actions/workflows/test.yml) 在干净环境中测试三个 Python 版本、安装后的 CLI、两个 SDK，以及 Docker 的 core、live 和 Compose 入口。点击对应提交的运行记录可查看各项日志。
+[GitHub Actions](https://github.com/QuincyQAQ/daemon-agent/actions/workflows/test.yml) 在干净环境中测试三个 Python 版本、安装后的 CLI、两个 SDK，以及 Docker 的 core、live 和 Compose 入口。点击对应提交的运行记录可查看各项日志。
